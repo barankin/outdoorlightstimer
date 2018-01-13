@@ -12,6 +12,7 @@
 
 #include <ESP8266WiFi.h>
 #include <NTPClient.h>
+#include <Time.h>
 
 const char *WIFI_SSID = "ford_prefect_2.4"; //  Your WiFi network SSID (name)
 const char *WIFI_PSK = "annabanana";  // Your WiFi network PSK (password)
@@ -20,7 +21,7 @@ const char *WIFI_PSK = "annabanana";  // Your WiFi network PSK (password)
 // Once connected to WiFi, start the NTP Client
 void onSTAGotIP(WiFiEventStationModeGotIP event) {
   Serial.printf("Got IP: %s\n", event.ip.toString().c_str());
-  NTP.init((char *)"pool.ntp.org", UTC0700);
+  NTP.init((char *)"pool.ntp.org", UTC_0500);
   //NTP.setPollingInterval(60); // Poll every minute
 }
 
@@ -35,6 +36,7 @@ void setup() {
 
   Serial.begin(115200);
   Serial.println();
+  Serial.println("Serial up and running");
 
   NTP.onSyncEvent([](NTPSyncEvent_t ntpEvent) {
     switch (ntpEvent) {
@@ -75,8 +77,10 @@ void loop() {
     if (timeStatus() != timeSet) {
       return;
     }
-
+    time_t t = now();
     Serial.printf("Current time: %s - First synchronized at: %s.\n",
-                  NTP.getTimeDate(now()), NTP.getTimeDate(NTP.getFirstSync()));
+                  NTP.getTimeDate(t), NTP.getTimeDate(NTP.getFirstSync()));
+    Serial.printf("The hour is %d, the minute is %d and seconds are %d.\n",hour(t),minute(t),second(t));
+    Serial.println();
   }
 }
