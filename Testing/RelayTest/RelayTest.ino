@@ -1,0 +1,41 @@
+/*
+
+*/
+
+// constants won't change. Used here to set a pin number:
+const int ledPin = D6;// the number of the LED pin
+
+// Variables will change:
+int ledState = LOW;             // ledState used to set the LED
+
+// Generally, you should use "unsigned long" for variables that hold time
+// The value will quickly become too large for an int to store
+unsigned long previousMillis = 0;        // will store last time LED was updated
+
+// constants won't change:
+const long interval = 1000;           // interval at which to blink (milliseconds)
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Serial started");
+  pinMode(ledPin, OUTPUT);
+}
+
+void loop() {
+
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+
+    if (ledState == LOW) {
+      ledState = HIGH;
+    } else {
+      ledState = LOW;
+    }
+
+    Serial.println(ledState);
+    digitalWrite(ledPin, ledState);
+  }
+    //Serial.println("Working");
+}
