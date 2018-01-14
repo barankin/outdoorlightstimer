@@ -4,38 +4,43 @@
    Uses libraries
    1. https://github.com/stelgenhof/NTPClient.git
    2. https://github.com/dmkishi/Dusk2Dawn
+   3. Arduino Time library
+
+   and board manager
+   1. https://github.com/esp8266/Arduino#installing-with-boards-manager
 */
 
 #include <ESP8266WiFi.h>
-#include <Dusk2Dawn.h>
 #include <NTPClient.h>
+#include <Dusk2Dawn.h>
 #include <Time.h>
 
-// constants won't change. Used here to set a pin number:
+/***************************************************/
 const int relayPin = D6;// the number of the Relay pin
 const long interval = 1000;           // interval which to check the time (milliseconds)
 
 const char *WIFI_SSID = "ford_prefect_2.4"; //  Your WiFi network SSID (name)
 const char *WIFI_PSK = "annabanana";  // Your WiFi network PSK (password)
+/***************************************************/
 
+/***************************************************/
 // variable for the state of the relay
 int relayState = LOW;
 unsigned long previousMillis = 0;
+/***************************************************/
 
 
-// Event Handler when an IP address has been assigned
-// Once connected to WiFi, start the NTP Client
-void onSTAGotIP(WiFiEventStationModeGotIP event) {
-  Serial.printf("Got IP: %s\n", event.ip.toString().c_str());
-  NTP.init((char *)"pool.ntp.org", UTC_0500);
-  //NTP.setPollingInterval(60); // Poll every minute
-}
+/***************************************************/
+//Build global objects
+//Set up sunset determination
+Dusk2Dawn toronto(43.666468, -79.477260, -5);
+/***************************************************/
 
-// Event Handler when WiFi is disconnected
-void onSTADisconnected(WiFiEventStationModeDisconnected event) {
-  Serial.printf("WiFi connection (%s) dropped.\n", event.ssid.c_str());
-  Serial.printf("Reason: %d\n", event.reason);
-}
+/***************************************************/
+//Internal function declarations
+void onSTAGotIP(WiFiEventStationModeGotIP event);
+void onSTADisconnected(WiFiEventStationModeDisconnected event);
+/***************************************************/
 
 void setup() {
   static WiFiEventHandler gotIpEventHandler, disconnectedEventHandler;
@@ -75,11 +80,6 @@ void setup() {
   /***************************************************/
 
   /***************************************************/
-  //Set up sunset determination
-  Dusk2Dawn toronto(43.666468, -79.477260, -5);
-  /***************************************************/
-
-  /***************************************************/
   // Connecting to a WiFi network
   Serial.printf("Connecting to WiFi network: %s \n", WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PSK);
@@ -89,7 +89,6 @@ void setup() {
     Serial.print(".");
   }
   /***************************************************/
-
 }
 
 void loop() {
@@ -121,3 +120,19 @@ void loop() {
   }
 }
 
+/***************************************************/
+//Event Handlers
+// Event Handler when an IP address has been assigned
+// Once connected to WiFi, start the NTP Client
+void onSTAGotIP(WiFiEventStationModeGotIP event) {
+  Serial.printf("Got IP: %s\n", event.ip.toString().c_str());
+  NTP.init((char *)"pool.ntp.org", UTC_0500);
+  //NTP.setPollingInterval(60); // Poll every minute
+}
+
+// Event Handler when WiFi is disconnected
+void onSTADisconnected(WiFiEventStationModeDisconnected event) {
+  Serial.printf("WiFi connection (%s) dropped.\n", event.ssid.c_str());
+  Serial.printf("Reason: %d\n", event.reason);
+}
+/***************************************************/
