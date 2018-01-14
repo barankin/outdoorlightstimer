@@ -17,18 +17,15 @@
 
 /***************************************************/
 const int relayPin = D6;// the number of the Relay pin
-const int ledPin =  LED_BUILTIN;// the number of the LED pin
 const long interval = 10000;           // interval which to check the time (milliseconds)
 
 const char *WIFI_SSID = "ford_prefect_2.4"; //  Your WiFi network SSID (name)
 const char *WIFI_PSK = "annabanana";  // Your WiFi network PSK (password)
-
-char *turnOffTime = "23:00";
 /***************************************************/
 
 /***************************************************/
 // variable for the state of the relay
-int relayState = HIGH;
+int relayState = LOW;
 unsigned long previousMillis = 0;
 /***************************************************/
 
@@ -43,9 +40,6 @@ Dusk2Dawn toronto(43.666468, -79.477260, -5);
 //Internal function declarations
 void onSTAGotIP(WiFiEventStationModeGotIP event);
 void onSTADisconnected(WiFiEventStationModeDisconnected event);
-
-int getHourFromString(char * timeString);
-int getMinuteFromString(char * timeString);
 /***************************************************/
 
 void setup() {
@@ -61,9 +55,7 @@ void setup() {
   /***************************************************/
   //Set up relay
   pinMode(relayPin, OUTPUT); //set relay pin to an output
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(relayPin, relayState); //initialize relay pin to the relay state (LOW at startup)
-  digitalWrite(ledPin,relayState);
+  digitalWrite(relayPin, relayState); //initialize relay pin to the relay state (LOW at starup)
   /***************************************************/
 
   /***************************************************/
@@ -78,7 +70,7 @@ void setup() {
         Serial.printf("NTP server not reachable.\n");
         break;
       case NTP_EVENT_SYNCHRONIZED:
-        //Serial.printf("Time number is %d\n",NTP.getLastSync());
+        Serial.printf("Time number is %d\n",NTP.getLastSync());
         Serial.printf("Got NTP time: %s\n", NTP.getTimeDate(NTP.getLastSync()));
         break;
     }
@@ -117,50 +109,16 @@ void loop() {
     //get sunset for today (if not daylight savings)
     int sunset = toronto.sunset(year(currentTime), month(currentTime), day(currentTime), false);
 
-    char timeString[6];
-    Dusk2Dawn::min2str(timeString, sunset);
-
-    //int sunsetHourInt = getHourFromString(timeString);
-    //int sunsetHourInt = 12;
-    //int sunsetMinuteInt = getMinuteFromString(timeString);
-    int sunsetMinutes = (60 * getHourFromString(timeString)) + getMinuteFromString(timeString);
-    //int sunsetMinutes = 830;
-    //int offHourInt = getHourFromString(turnOffTime);
-    //int offMinuteInt = getMinuteFromString(turnOffTime);
-    int offMinutes = (60 * getHourFromString(turnOffTime)) + getMinuteFromString(turnOffTime);
-    //int offMinutes = 834;
-
-    int currentTimeMinutes = (60*hour(currentTime)) + minute(currentTime);
-    
-    Serial.printf("Sunset is at %d.\n", sunsetMinutes);
-    Serial.printf("Current time is %d.\n", currentTimeMinutes);
-    Serial.printf("Off time is at %d.\n", offMinutes);
-
-    if(currentTimeMinutes >= sunsetMinutes && currentTimeMinutes < offMinutes){
-      relayState = LOW;
-    }else{
-      relayState = HIGH;
-    }
-/*
-    if (sunsetHourInt <= hour(currentTime) <= offHourInt) {
-      if (sunsetMinuteInt <= minute(currentTime) <= offMinuteInt) {
-        relayState = HIGH;
-      } else {
-        relayState = LOW;
-      }
-    } else {
-      relayState = LOW;
-    }*/
-
-    //Serial.printf("Time number is %d\n",NTP.getLastSync());
-    //Serial.printf("Current time: %s - First synchronized at: %s.\n",
-    //              NTP.getTimeDate(currentTime), NTP.getTimeDate(NTP.getFirstSync()));
+    char time[6];
+    Dusk2Dawn::min2str(time, sunset);
+    Serial.println(time); // 06:58
+    Serial.printf("Time number is %d\n",NTP.getLastSync());
+    Serial.printf("Current time: %s - First synchronized at: %s.\n",
+                  NTP.getTimeDate(currentTime), NTP.getTimeDate(NTP.getFirstSync()));
     //Serial.printf("The hour is %d, the minute is %d and seconds are %d.\n",hour(currentTime),minute(currentTime),second(currentTime));
     //Serial.println();
 
     digitalWrite(relayPin, relayState);
-    digitalWrite(ledPin, relayState);
-    //Serial.println(relayState);
   }
 }
 
@@ -171,7 +129,7 @@ void loop() {
 void onSTAGotIP(WiFiEventStationModeGotIP event) {
   Serial.printf("Got IP: %s\n", event.ip.toString().c_str());
   NTP.init((char *)"pool.ntp.org", UTC_0500);
-  //NTP.setPollingInterval(15); // Poll
+  NTP.setPollingInterval(15); // Poll every minute
 }
 
 // Event Handler when WiFi is disconnected
@@ -180,21 +138,3 @@ void onSTADisconnected(WiFiEventStationModeDisconnected event) {
   Serial.printf("Reason: %d\n", event.reason);
 }
 /***************************************************/
-
-int getHourFromString(char * timeString) {
-  char hourString[3];
-  hourString[0] = timeString[0];
-  hourString[1] = timeString[1];
-  hourString[2] = timeString[5];
-
-  return atoi(hourString);
-}
-
-int getMinuteFromString(char * timeString) {
-
-  char minuteString[3];
-  minuteString[0] = timeString[3];
-  minuteString[1] = timeString[4];
-  minuteString[2] = timeString[5];
-  return atoi(minuteString);
-}

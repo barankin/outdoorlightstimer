@@ -48,6 +48,7 @@ void setup() {
       Serial.printf("NTP server not reachable.\n");
       break;
     case NTP_EVENT_SYNCHRONIZED:
+      Serial.println(NTP.getLastSync());
       Serial.printf("Got NTP time: %s\n", NTP.getTimeDate(NTP.getLastSync()));
       break;
     }
