@@ -23,7 +23,8 @@ const long interval = 10000;           // interval which to check the time (mill
 const char *WIFI_SSID = "ford_prefect_2.4"; //  Your WiFi network SSID (name)
 const char *WIFI_PSK = "annabanana";  // Your WiFi network PSK (password)
 
-char *turnOffTime = "23:00";
+char *turnOffTime = "23:00"; //turn off at this time.
+char *turnOnTime = "6:00"; //turn on at this time in the morning (and then turn off about 30 minutes after sunrise)
 /***************************************************/
 
 /***************************************************/
@@ -117,18 +118,28 @@ void loop() {
     //get sunset for today (if not daylight savings)
     int sunset = toronto.sunset(year(currentTime), month(currentTime), day(currentTime), false);
 
-    char timeString[6];
-    Dusk2Dawn::min2str(timeString, sunset);
+    //get sunrise for today (if not daylight savings)
+    int sunrise = toronto.sunrise(year(currentTime), month(currentTime), day(currentTime), false);
 
-    //int sunsetHourInt = getHourFromString(timeString);
+    char sunsetTimeString[6];
+    Dusk2Dawn::min2str(sunsetTimeString, sunset);
+    
+    char sunriseTimeString[6];
+    Dusk2Dawn::min2str(sunriseTimeString, sunrise);
+
+    //int sunsetHourInt = getHourFromString(sunsetTimeString);
     //int sunsetHourInt = 12;
-    //int sunsetMinuteInt = getMinuteFromString(timeString);
-    int sunsetMinutes = (60 * getHourFromString(timeString)) + getMinuteFromString(timeString);
+    //int sunsetMinuteInt = getMinuteFromString(sunsetTimeString);
+    int sunsetMinutes = (60 * getHourFromString(sunsetTimeString)) + getMinuteFromString(sunsetTimeString);
     //int sunsetMinutes = 830;
     //int offHourInt = getHourFromString(turnOffTime);
     //int offMinuteInt = getMinuteFromString(turnOffTime);
     int offMinutes = (60 * getHourFromString(turnOffTime)) + getMinuteFromString(turnOffTime);
     //int offMinutes = 834;
+    
+    int sunriseMinutes = (60 * getHourFromString(sunsetTimeString)) + getMinuteFromString(sunsetTimeString);
+    
+    int onMinutes = (60 * getHourFromString(turnOnTime)) + getMinuteFromString(turnOnTime);
 
     int currentTimeMinutes = (60*hour(currentTime)) + minute(currentTime);
     
@@ -136,21 +147,11 @@ void loop() {
     Serial.printf("Current time is %d.\n", currentTimeMinutes);
     Serial.printf("Off time is at %d.\n", offMinutes);
 
-    if(currentTimeMinutes >= sunsetMinutes && currentTimeMinutes < offMinutes){
+    if((currentTimeMinutes >= sunsetMinutes && currentTimeMinutes < offMinutes)|| (currentTimeMinutes>onMinutes && currentTimeMinutes < (sunriseMinutes+30))){
       relayState = LOW;
     }else{
       relayState = HIGH;
     }
-/*
-    if (sunsetHourInt <= hour(currentTime) <= offHourInt) {
-      if (sunsetMinuteInt <= minute(currentTime) <= offMinuteInt) {
-        relayState = HIGH;
-      } else {
-        relayState = LOW;
-      }
-    } else {
-      relayState = LOW;
-    }*/
 
     //Serial.printf("Time number is %d\n",NTP.getLastSync());
     //Serial.printf("Current time: %s - First synchronized at: %s.\n",
