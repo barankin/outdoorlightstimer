@@ -1,5 +1,6 @@
 /*
-   A program that turns the lights on at sunset and turns them off at a certain time
+   A program that turns the lights on at sunset and turns them off at a certain time.
+   And turns them on at a certain time and off after sunrise.
 
    Uses libraries
    1. https://github.com/stelgenhof/NTPClient.git
@@ -137,7 +138,7 @@ void loop() {
     int offMinutes = (60 * getHourFromString(turnOffTime)) + getMinuteFromString(turnOffTime);
     //int offMinutes = 834;
     
-    int sunriseMinutes = (60 * getHourFromString(sunsetTimeString)) + getMinuteFromString(sunsetTimeString);
+    int sunriseMinutes = (60 * getHourFromString(sunriseTimeString)) + getMinuteFromString(sunriseTimeString);
     
     int onMinutes = (60 * getHourFromString(turnOnTime)) + getMinuteFromString(turnOnTime);
 
@@ -146,6 +147,10 @@ void loop() {
     Serial.printf("Sunset is at %d.\n", sunsetMinutes);
     Serial.printf("Current time is %d.\n", currentTimeMinutes);
     Serial.printf("Off time is at %d.\n", offMinutes);
+    
+    Serial.printf("On time is at %d.\n", onMinutes);
+    Serial.printf("Current time is %d.\n", currentTimeMinutes);
+    Serial.printf("Sunrise is at %d.\n", sunriseMinutes);
 
     if((currentTimeMinutes >= sunsetMinutes && currentTimeMinutes < offMinutes)|| (currentTimeMinutes>onMinutes && currentTimeMinutes < (sunriseMinutes+30))){
       relayState = LOW;
