@@ -34,6 +34,7 @@ int relayState = HIGH;
 unsigned long previousMillis = 0;
 /***************************************************/
 
+int DST = 0; //DST is 1, DST off is 0
 
 /***************************************************/
 //Build global objects
